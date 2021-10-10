@@ -14,29 +14,35 @@
 #include <ctype.h>
 
 #define TAM 3
-
+#define VACIO 1
+#define OCUPADO 0
 
 struct{
 	int id;
-	char nombre[25];
-	char apellido[25];
-	float salario;
+	char name[51];
+	char lastName[51];
+	float salary;
 	int sector;
 	int isEmpty;
 
-}typedef eEmpleados;
-
-
-
+}typedef Employee;
 
 
 int MenuDeOpciones(void);
 int ValidarEnteroConMaxMin(char opcionIngresada[],char mensajeError[], int min, int max);
 int ValidarEntero(char numero[]);
 int funcionMaxMin(char opcionIngresada[],int min, int max);
-void InicializarLista(eEmpleados* lista[],int tam);
-int AltaEmpleado(eEmpleados* lista[], int tam,int* idsiguiente);
+void ProcesoCorrecto(int retorno, char mensajeCorrecto[], char mensajeError[]);
+int PedirString(char MSJ[], char ERRORMSJ[],char copiaParametro[], int max);
+int ValidarLetras(char cadena[]);
+float PedirFlotanteSinRango(char mensaje[], char mensajeError[]);
+int ValidoFloat(float numeroFloat);
+int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[]);
 
+int InitEmployees(Employee list[], int len);
+
+int FindIsEmpty(Employee list[], int len);
+Employee addEmployee(int idFree, int* pId);
 
 
 
@@ -44,11 +50,16 @@ int AltaEmpleado(eEmpleados* lista[], int tam,int* idsiguiente);
 int main(void) {
 
 	setbuf(stdout,NULL);
-	int* idAutonumerico[TAM];
-	*(idAutonumerico) = 0;
+	int idAuto = 5000;
 	int opcion;
-	eEmpleados* listaEmpleados[TAM];
-	InicializarLista(listaEmpleados[], TAM, idAutonumerico);
+	int r;
+	int idEmpty;
+	Employee listEmployee[TAM];
+
+	r = InitEmployees(listEmployee,TAM);
+	ProcesoCorrecto(r, "Se inicializaron correctamente todos los empleados", "Error en la inicializacion de los empleados");
+
+
 
 	do{
 		opcion = MenuDeOpciones();
@@ -56,8 +67,24 @@ int main(void) {
 		switch(opcion){
 
 		case 1:
-			printf("Alta Persona");
+			printf("Alta Persona\n");
+
+			idEmpty = FindIsEmpty(listEmployee, TAM);
+
+			if (idEmpty == -1){
+				printf("No hay lugar vacio");
+			}
+			else{
+				listEmployee[idEmpty] = addEmployee(idEmpty, &idAuto);
+				if(listEmployee[idEmpty].isEmpty == OCUPADO){
+					printf("\nEl empleado se cargo Correctamente");
+				}
+				else{
+					printf("\nEl empleado no se cargo");
+				}
+			}
 			break;
+
 		case 2:
 			printf("Modificar Persona");
 			break;
@@ -74,6 +101,7 @@ int main(void) {
 			default:
 			printf("OPCION INGRESADA INCORRECTA");
 			break;
+
 		}
 
 	}while(opcion != 5);
@@ -81,47 +109,119 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
-void InicializarLista(eEmpleados* lista[],int tam){
+int InitEmployees(Employee list[], int len){
+	int retorno = 0;
 
-	for (int i = 0; i < tam; i++)
+	if(list != NULL){
+		for(int i = 0; i < len; i++){
+			list[i].isEmpty = VACIO;
+		}
+		retorno = 1;
+	}
+
+
+	return retorno;
+}
+
+int FindIsEmpty(Employee list[], int len){
+	int auxId = -1;
+
+	if(list != NULL){
+		for(int i = 0; i < len; i++){
+			if(list[i].isEmpty == VACIO){
+				auxId = i;
+			}
+		}
+
+	}
+	return auxId;
+}
+
+Employee addEmployee(int idFree, int* pId){
+	Employee auxEmployee;
+	int retorno;
+	char auxChar[10];
+
+	retorno = PedirString("Ingrese el NOMBRE: ", "ERROR. Ingrese un NOMBRE valido: ", auxEmployee.name, 51);
+	if(retorno == -1)
 	{
+		auxEmployee.isEmpty = VACIO;
+	}
+	else
+	{
+		retorno = PedirString("Ingrese el APELLIDO: ", "ERROR. Ingrese un APELLIDO valido: ", auxEmployee.lastName, 51);
+		if (retorno == -1 )
+		{
+			auxEmployee.isEmpty = VACIO;
+		}
+		else
+		{
+			auxEmployee.salary = PedirFlotanteSinRango("Ingrese el Salario con sus decimales: ", "ERROR. Salario invalido: ");
+			if (auxEmployee.salary == -1 )
+			{
+				auxEmployee.isEmpty = VACIO;
+			}
+			else
+			{
+				printf("Ingrese el SECTOR: ");
+				fflush(stdin);
+				scanf("%[^\n]", auxChar);
+				retorno = ValidarEnteroSinRango(auxChar, "ERROR. Ingrese un sector valido: ");
+				if(retorno == -1)
+				{
+					auxEmployee.isEmpty = VACIO;
+				}
+				else
+				{
+					auxEmployee.sector = atoi(auxChar);
+					auxEmployee.id = *pId;
+					(*pId)++;
+					auxEmployee.isEmpty = OCUPADO;
+				}
+			}
+		}
+	}
 
+
+	return auxEmployee;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void ProcesoCorrecto(int retorno, char mensajeCorrecto[], char mensajeError[])
+{
+	if (retorno == 1)
+	{
+		printf("\n%s\n",mensajeCorrecto);
+	}
+	else
+	{
+		printf("\n%s\n",mensajeError);
 	}
 
 }
-
-int AltaEmpleado(eEmpleados* lista[], int tam,int* idsiguiente){
-	int r;
-
-
-
-
-	return r;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int MenuDeOpciones(void)
 {
@@ -202,4 +302,115 @@ int funcionMaxMin(char opcionIngresada[],int min, int max)
 		resultado = 0;
 	}
 	return resultado;
+}
+
+int PedirString(char MSJ[], char ERRORMSJ[],char copiaParametro[], int max){
+	char parametro[1000];
+	int retorno;
+	int contador;
+
+	contador = 0;
+
+	printf("%s", MSJ);
+	fflush(stdin);
+	gets(parametro);
+
+	while(contador < 3)
+	{
+		if(ValidarLetras(parametro) == 0 || strlen(parametro) > max || strlen(parametro) == 0)
+		{
+			printf("%s", ERRORMSJ);
+			fflush(stdin);
+			gets(parametro);
+			retorno = -1;
+			contador++;
+		}
+		else
+		{
+			strcpy(copiaParametro, parametro);
+			retorno = 1;
+			break;
+		}
+	}
+
+	return retorno;
+}
+
+int ValidarLetras(char cadena[])
+{
+	int i;
+	int resultado;
+
+	for(i=0; i<strlen(cadena); i++)
+	{
+		if(isalpha(cadena[i]) != 0)
+		{
+			resultado = 1;
+		}
+		else
+		{
+			resultado = 0;
+		}
+	}
+
+	return resultado;
+}
+
+int ValidoFloat(float numeroFloat)
+{
+	int rtn;
+	int tomoEntero;
+
+	tomoEntero=numeroFloat;
+	if(numeroFloat>tomoEntero || numeroFloat<0)
+	{
+		rtn=1;
+	}
+	else
+	{
+		rtn=0;
+	}
+
+  return rtn;
+}
+
+float PedirFlotanteSinRango(char mensaje[], char mensajeError[])
+{
+    float numeroIngresado = -1;
+    int intentos = 0;
+
+    printf("%s", mensaje);
+	scanf("%f", &numeroIngresado);
+	while(ValidoFloat(numeroIngresado) == 0)
+	{
+	    printf("%s", mensajeError);
+	    scanf("%f", &numeroIngresado);
+	    intentos++;
+	}
+
+	return numeroIngresado;
+}
+int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[])
+{
+	int resultadoValidado;
+	int contadorError;
+	contadorError = 0;
+
+	while(contadorError < 2)
+	{
+		if(ValidarEntero(opcionIngresada) == 0)
+		{
+			printf("%s", mensajeError);
+			fflush(stdin);
+			scanf("%[^\n]",opcionIngresada);
+			resultadoValidado = -1;
+		}
+		else
+		{
+			resultadoValidado = atoi(opcionIngresada);
+			break;
+		}
+		contadorError++;
+	}
+	return resultadoValidado;
 }
