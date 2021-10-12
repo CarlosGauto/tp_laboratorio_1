@@ -36,9 +36,9 @@ void ProcesoCorrecto(int retorno, char mensajeCorrecto[], char mensajeError[]);
 int PedirString(char MSJ[], char ERRORMSJ[],char copiaParametro[], int max);
 int ValidarLetras(char cadena[]);
 float PedirFlotanteSinRango(char mensaje[], char mensajeError[]);
-int ValidoFloat(float numeroFloat);
+float ValidarFloat(char numero[]);
 int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[]);
-
+int printEmployees(Employee list[], int length);
 int InitEmployees(Employee list[], int len);
 
 int FindIsEmpty(Employee list[], int len);
@@ -92,7 +92,8 @@ int main(void) {
 			printf("Baja Persona");
 			break;
 		case 4:
-			printf("Ordenar Persona");
+			printf("LISTADO");
+			printEmployees(listEmployee, TAM);
 			break;
 		case 5:
 			printf("PROGRAMA TERMINADO");
@@ -157,7 +158,7 @@ Employee addEmployee(int idFree, int* pId){
 		else
 		{
 			auxEmployee.salary = PedirFlotanteSinRango("Ingrese el Salario con sus decimales: ", "ERROR. Salario invalido: ");
-			if (auxEmployee.salary == -1 )
+			if (auxEmployee.salary == 0 )
 			{
 				auxEmployee.isEmpty = VACIO;
 			}
@@ -185,7 +186,28 @@ Employee addEmployee(int idFree, int* pId){
 
 	return auxEmployee;
 }
+int printEmployees(Employee list[], int length)
+{
 
+	int i;
+	int retorno;
+	retorno = -1;
+	printf("\nID   |APELLIDO  |NOMBRE  |SECTOR  |SALARIO\n");
+	printf("-------------------------------------\n");
+	for (i = 0; i < length; i++)
+	{
+		for(i = 0; i < length; i++)
+		{
+			if(list[i].isEmpty == OCUPADO)
+			{
+				printf("%-5d|%-10s|%-8s|%-8d|%.2f\n",list[i].id, list[i].lastName,list[i].name, list[i].sector, list[i].salary);
+
+			}
+		}
+	}
+	retorno = 1;
+	return retorno;
+}
 
 
 
@@ -250,19 +272,22 @@ int ValidarEnteroConMaxMin(char opcionIngresada[],char mensajeError[], int min, 
 
 	while(contadorError < 2)
 	{
+		contadorError++;
 		if(ValidarEntero(opcionIngresada) == 0 || funcionMaxMin(opcionIngresada, min, max) == 0)
 		{
-			printf("%s""%d al ""%d : ", mensajeError, min, max);
-			fflush(stdin);
-			scanf("%[^\n]",opcionIngresada);
-			resultadoValidado = -1;
+			if(contadorError < 2){
+				printf("%s""%d al ""%d : ", mensajeError, min, max);
+				fflush(stdin);
+				scanf("%[^\n]",opcionIngresada);
+				resultadoValidado = -1;
+			}
 		}
 		else
 		{
 			resultadoValidado = atoi(opcionIngresada);
 			break;
 		}
-		contadorError++;
+
 	}
 	return resultadoValidado;
 }
@@ -317,13 +342,15 @@ int PedirString(char MSJ[], char ERRORMSJ[],char copiaParametro[], int max){
 
 	while(contador < 3)
 	{
+		contador++;
 		if(ValidarLetras(parametro) == 0 || strlen(parametro) > max || strlen(parametro) == 0)
 		{
-			printf("%s", ERRORMSJ);
-			fflush(stdin);
-			gets(parametro);
-			retorno = -1;
-			contador++;
+			if(contador < 3){
+				printf("%s", ERRORMSJ);
+				fflush(stdin);
+				gets(parametro);
+				retorno = -1;
+			}
 		}
 		else
 		{
@@ -356,39 +383,69 @@ int ValidarLetras(char cadena[])
 	return resultado;
 }
 
-int ValidoFloat(float numeroFloat)
+float ValidarFloat(char numero[])
 {
-	int rtn;
-	int tomoEntero;
+	float resultado = 1;
+	int i;
+	int contadorDePuntos = 0;
 
-	tomoEntero=numeroFloat;
-	if(numeroFloat>tomoEntero || numeroFloat<0)
+	if(strlen(numero) > 0)
 	{
-		rtn=1;
+		for(i = 0; i < strlen(numero); i++)
+		{
+			if(isdigit(numero[i]) == 0 && numero[i] != ',' && numero[i] != '.')
+			{
+				resultado = 0;
+				break;
+			}
+			else{
+				if(numero[i] == ',' || numero[i] == '.'){
+					numero[i] = '.';
+					contadorDePuntos++;
+				}
+			}
+		}
+		if (contadorDePuntos > 1){
+			resultado = 0;
+		}
 	}
 	else
 	{
-		rtn=0;
+		resultado = 0;
 	}
 
-  return rtn;
+	return resultado;
 }
 
 float PedirFlotanteSinRango(char mensaje[], char mensajeError[])
 {
-    float numeroIngresado = -1;
+    char validaNumeroIngresado[15];
+    float auxNumeroValidado = 0;
     int intentos = 0;
 
     printf("%s", mensaje);
-	scanf("%f", &numeroIngresado);
-	while(ValidoFloat(numeroIngresado) == 0)
-	{
-	    printf("%s", mensajeError);
-	    scanf("%f", &numeroIngresado);
-	    intentos++;
-	}
+    fflush(stdin);
+    scanf("%[^\n]", validaNumeroIngresado);
 
-	return numeroIngresado;
+    while(intentos < 2){
+
+    	intentos++;
+		if(ValidarFloat(validaNumeroIngresado) == 0)
+		{
+			if(intentos<2){
+				printf("%s", mensajeError);
+				fflush(stdin);
+				scanf("%[^\n]", validaNumeroIngresado);
+			}
+		}
+		else{
+			auxNumeroValidado = atof(validaNumeroIngresado);
+			break;
+		}
+
+    }
+
+	return auxNumeroValidado;
 }
 int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[])
 {
@@ -396,21 +453,25 @@ int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[])
 	int contadorError;
 	contadorError = 0;
 
-	while(contadorError < 2)
+	while(contadorError < 3)
 	{
+		contadorError++;
 		if(ValidarEntero(opcionIngresada) == 0)
 		{
-			printf("%s", mensajeError);
-			fflush(stdin);
-			scanf("%[^\n]",opcionIngresada);
-			resultadoValidado = -1;
+			if(contadorError < 3){
+				printf("%s", mensajeError);
+				fflush(stdin);
+				scanf("%[^\n]",opcionIngresada);
+				resultadoValidado = -1;
+			}
 		}
 		else
 		{
 			resultadoValidado = atoi(opcionIngresada);
 			break;
 		}
-		contadorError++;
+
 	}
 	return resultadoValidado;
 }
+
