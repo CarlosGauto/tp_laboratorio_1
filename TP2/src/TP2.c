@@ -29,6 +29,7 @@ struct{
 
 
 int MenuDeOpciones(void);
+int MenuModificar(void);
 int ValidarEnteroConMaxMin(char opcionIngresada[],char mensajeError[], int min, int max);
 int ValidarEntero(char numero[]);
 int funcionMaxMin(char opcionIngresada[],int min, int max);
@@ -38,11 +39,16 @@ int ValidarLetras(char cadena[]);
 float PedirFlotanteSinRango(char mensaje[], char mensajeError[]);
 float ValidarFloat(char numero[]);
 int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[]);
+
+int sortEmployees(Employee list[], int length, int orden);
+void printEmployee(Employee list[], int length, int id);
+int CasosModificar(Employee list[], int length, int opcion, int id);
 int printEmployees(Employee list[], int length);
 int InitEmployees(Employee list[], int len);
 
 int FindIsEmpty(Employee list[], int len);
 Employee addEmployee(int idFree, int* pId);
+int findEmployeeById(Employee list[], int len, int id);
 
 
 
@@ -52,56 +58,133 @@ int main(void) {
 	setbuf(stdout,NULL);
 	int idAuto = 5000;
 	int opcion;
+	int opcionModificar;
 	int r;
 	int idEmpty;
+	char auxChar[10];
+	int idAux;
+	int i;
+	int opcionListado;
+	int banderaPrimerAlta = 0;
 	Employee listEmployee[TAM];
 
 	r = InitEmployees(listEmployee,TAM);
 	ProcesoCorrecto(r, "Se inicializaron correctamente todos los empleados", "Error en la inicializacion de los empleados");
 
-
-
 	do{
 		opcion = MenuDeOpciones();
+		fflush(stdin);
 
 		switch(opcion){
 
-		case 1:
-			printf("Alta Persona\n");
+			case 1:
+				printf("Alta Persona\n");
 
-			idEmpty = FindIsEmpty(listEmployee, TAM);
+				idEmpty = FindIsEmpty(listEmployee, TAM);
 
-			if (idEmpty == -1){
-				printf("No hay lugar vacio");
-			}
-			else{
-				listEmployee[idEmpty] = addEmployee(idEmpty, &idAuto);
-				if(listEmployee[idEmpty].isEmpty == OCUPADO){
-					printf("\nEl empleado se cargo Correctamente");
+				if (idEmpty == -1){
+					printf("No hay lugar vacio");
 				}
 				else{
-					printf("\nEl empleado no se cargo");
+					listEmployee[idEmpty] = addEmployee(idEmpty, &idAuto);
+					if(listEmployee[idEmpty].isEmpty == OCUPADO){
+						printf("\nEl empleado se cargo Correctamente");
+						banderaPrimerAlta = 1;
+					}
+					else{
+						printf("\nEl empleado no se cargo");
+					}
+				}
+			break;
+
+			case 2:
+			if(banderaPrimerAlta){
+				printf("Modificar Persona");
+				printEmployees(listEmployee, TAM);
+
+				printf("\nIndique el id que desea modificar: ");
+				fflush(stdin);
+				scanf("%[^\n]",auxChar);
+				idAux = ValidarEnteroSinRango(auxChar, "ERROR. Ingrese un id valido para Modificar: ");
+
+				if(idAux == -1){
+					printf("\nNo se pudo realizar la modificacion");
+				}
+				else{
+
+					i = findEmployeeById(listEmployee, TAM, idAux);
+					if(i == -1){
+						printf("\nNo se encontro el Empleado:");
+					}
+					else{
+
+						opcionModificar = MenuModificar();
+						r = CasosModificar(listEmployee, TAM, opcionModificar, i);
+						ProcesoCorrecto(r, "Se realizo la Modificacion con Exito", "No se pudo realizar la Modificacion");
+					}
 				}
 			}
-			break;
+			else{
+				printf("ERROR. Primero ingrese un Alta");
+			}
+					break;
 
-		case 2:
-			printf("Modificar Persona");
-			break;
-		case 3:
-			printf("Baja Persona");
-			break;
-		case 4:
-			printf("LISTADO");
-			printEmployees(listEmployee, TAM);
-			break;
-		case 5:
-			printf("PROGRAMA TERMINADO");
-			break;
+				case 3:
+				if(banderaPrimerAlta){
+					printf("Baja Persona");
+					printEmployees(listEmployee, TAM);
 
-			default:
-			printf("OPCION INGRESADA INCORRECTA");
-			break;
+					printf("\nIndique el id para la Baja: ");
+					fflush(stdin);
+					scanf("%[^\n]",auxChar);
+					idAux = ValidarEnteroSinRango(auxChar, "ERROR. Ingrese un id valido para la Baja: ");
+
+					if(idAux == -1){
+						printf("\nNo se pudo realizar la Baja");
+					}
+					else{
+						i = findEmployeeById(listEmployee, TAM, idAux);
+						if(i == -1){
+							printf("\nNo se encontro el Empleado:");
+						}
+						else{
+							printf("\nSera eliminado el Empleado: %s %s",listEmployee[i].lastName, listEmployee[i].name);
+							listEmployee[i].isEmpty = VACIO;
+						}
+					}
+				}
+				else{
+					printf("ERROR. Primero ingrese un Alta");
+				}
+					break;
+
+				case 4:
+				if(banderaPrimerAlta){
+					printf("LISTADO");
+					printEmployees(listEmployee, TAM);
+
+					printf("\n1.Orden Ascendente\n2.Orden Descendente\nElija una opcion: ");
+					fflush(stdin);
+					scanf("%[^\n]",auxChar);
+					opcionListado = ValidarEnteroConMaxMin(auxChar,"Error, ingrese una opcion correcta del ", 1, 2);
+
+					if(opcionListado != -1){
+						r = sortEmployees(listEmployee, TAM, opcionListado);
+						ProcesoCorrecto(r, "Se realizo el ordenamiento correctamente", "ERROR. NO Se realizo el ordenamiento correctamente");
+					}
+					printEmployees(listEmployee, TAM);
+				}
+				else{
+					printf("ERROR. Primero ingrese un Alta");
+				}
+					break;
+				case 5:
+					printf("PROGRAMA TERMINADO");
+					break;
+
+					default:
+					printf("OPCION INGRESADA INCORRECTA");
+					break;
 
 		}
 
@@ -158,7 +241,7 @@ Employee addEmployee(int idFree, int* pId){
 		else
 		{
 			auxEmployee.salary = PedirFlotanteSinRango("Ingrese el Salario con sus decimales: ", "ERROR. Salario invalido: ");
-			if (auxEmployee.salary == 0 )
+			if (auxEmployee.salary == -1 )
 			{
 				auxEmployee.isEmpty = VACIO;
 			}
@@ -196,21 +279,162 @@ int printEmployees(Employee list[], int length)
 	printf("-------------------------------------\n");
 	for (i = 0; i < length; i++)
 	{
-		for(i = 0; i < length; i++)
+		if(list[i].isEmpty == OCUPADO)
 		{
-			if(list[i].isEmpty == OCUPADO)
-			{
-				printf("%-5d|%-10s|%-8s|%-8d|%.2f\n",list[i].id, list[i].lastName,list[i].name, list[i].sector, list[i].salary);
+			printf("%-5d|%-10s|%-8s|%-8d|%.2f\n",list[i].id, list[i].lastName,list[i].name, list[i].sector, list[i].salary);
 
-			}
 		}
 	}
 	retorno = 1;
 	return retorno;
 }
+void printEmployee(Employee list[], int length, int id)
+{
+	int i;
 
+	printf("\nID   |APELLIDO  |NOMBRE  |SECTOR  |SALARIO\n");
+	printf("-------------------------------------\n");
+	for(i = 0; i < length; i++)
+	{
+		if(list[i].id == id && list[i].isEmpty == OCUPADO)
+		{
+			printf("%-5d|%-10s|%-8s|%-8d|%.2f\n",list[i].id, list[i].lastName,list[i].name, list[i].sector, list[i].salary);
 
+		}
+	}
 
+}
+
+int findEmployeeById(Employee list[], int len, int id)
+{
+	int retorno = -1;
+
+	for(int i = 0; i < len; i++)
+	{
+		if(list[i].id == id && list[i].isEmpty == OCUPADO){
+			retorno = i;
+		}
+	}
+
+	return retorno;
+}
+
+int CasosModificar(Employee list[], int length, int opcion, int id)
+{
+	int retorno = 0;
+	float auxFloat;
+	int auxInt;
+	char auxChar[10];
+
+	switch(opcion)
+	{
+		case 1:
+			retorno = PedirString("Ingrese el NUEVO NOMBRE: ", "ERROR. Ingrese un NOMBRE valido: ",list[id].name, 51);
+
+			break;
+
+		case 2:
+			retorno = PedirString("Ingrese el NUEVO APELLIDO: ", "ERROR. Ingrese un APELLIDO valido: ", list[id].lastName, 51);
+
+			break;
+
+		case 3:
+			auxFloat = PedirFlotanteSinRango("Ingrese el nuevo Salario con sus decimales: ", "ERROR. Ingrese el nuevo Salario invalido: ");
+			if (auxFloat == -1 )
+			{
+				retorno = -1;
+			}
+			else{
+				list[id].salary = auxFloat;
+				retorno = 1;
+			}
+
+			break;
+
+		case 4:
+			printf("Ingrese el NUEVO SECTOR: ");
+			fflush(stdin);
+
+			scanf("%[^\n]", auxChar);
+
+			auxInt = ValidarEnteroSinRango(auxChar, "ERROR. Ingrese un sector valido: ");
+
+			if(auxInt == -1)
+			{
+				retorno = -1;
+			}
+			else{
+				list[id].sector = auxInt;
+				retorno = 1;
+			}
+			break;
+		default:
+			printf("OPCION INGRESADA INCORRECTA");
+			break;
+	}
+	return retorno;
+}
+
+int sortEmployees(Employee list[], int length, int orden)
+{
+	int retorno;
+	retorno = -1;
+
+	int i;
+	int j;
+	Employee aux;
+
+	if (orden == 1)
+	{
+		for (i = 0; i < length - 1; i++)
+		{
+			for (j = i + 1; j < length; j++)
+			{
+				if (list[i].isEmpty == OCUPADO && list[j].isEmpty == OCUPADO)
+				{
+					if(strcmp(list[i].lastName , list[j].lastName)>0)
+					{
+						if(list[i].sector > list[j].sector)
+						{
+							aux = list[i];
+							list[i] = list[j];
+							list[j] = aux;
+						}
+					}
+				}
+			}
+		}
+
+		retorno = 1;
+	}
+	else
+	{
+		if (orden == 2)
+		{
+			for (i = 0; i < length - 1; i++)
+			{
+				for (j = i + 1; j < length; j++)
+				{
+					if (list[i].isEmpty == OCUPADO && list[j].isEmpty == OCUPADO)
+					{
+						if(strcmp(list[i].lastName , list[j].lastName)<0)
+						{
+							if(list[i].sector < list[j].sector)
+							{
+								aux = list[i];
+								list[i] = list[j];
+								list[j] = aux;
+							}
+						}
+					}
+				}
+			}
+			retorno = 1;
+		}
+
+	}
+	return retorno;
+}
 
 
 
@@ -260,6 +484,24 @@ int MenuDeOpciones(void)
 	scanf("%[^\n]", opcion);
 
 	opcionValidada = ValidarEnteroConMaxMin(opcion,"Error, ingrese una opcion correcta del ", 1, 5);
+
+	return opcionValidada;
+}
+int MenuModificar(void)
+{
+	char opcion[5];
+	int opcionValidada;
+	printf("\nOpciones de Modificacion");
+	printf("\n1. NOMBRE\n");
+	printf("2. APELLIDO\n");
+	printf("3. SALARIO\n");
+	printf("4. SECTOR\n");
+	printf("Elija una opcion: ");
+
+	fflush(stdin);
+	scanf("%[^\n]", opcion);
+
+	opcionValidada = ValidarEnteroConMaxMin(opcion,"Error, ingrese una opcion correcta del ", 1, 4);
 
 	return opcionValidada;
 }
@@ -331,14 +573,14 @@ int funcionMaxMin(char opcionIngresada[],int min, int max)
 
 int PedirString(char MSJ[], char ERRORMSJ[],char copiaParametro[], int max){
 	char parametro[1000];
-	int retorno;
+	int retorno = -1;
 	int contador;
 
 	contador = 0;
 
 	printf("%s", MSJ);
 	fflush(stdin);
-	gets(parametro);
+	scanf("%[^\n]", parametro);
 
 	while(contador < 3)
 	{
@@ -348,12 +590,13 @@ int PedirString(char MSJ[], char ERRORMSJ[],char copiaParametro[], int max){
 			if(contador < 3){
 				printf("%s", ERRORMSJ);
 				fflush(stdin);
-				gets(parametro);
+				scanf("%[^\n]", parametro);
 				retorno = -1;
 			}
 		}
 		else
 		{
+			fflush(stdin);
 			strcpy(copiaParametro, parametro);
 			retorno = 1;
 			break;
@@ -377,6 +620,7 @@ int ValidarLetras(char cadena[])
 		else
 		{
 			resultado = 0;
+			break;
 		}
 	}
 
@@ -420,7 +664,7 @@ float ValidarFloat(char numero[])
 float PedirFlotanteSinRango(char mensaje[], char mensajeError[])
 {
     char validaNumeroIngresado[15];
-    float auxNumeroValidado = 0;
+    float auxNumeroValidado = -1;
     int intentos = 0;
 
     printf("%s", mensaje);
@@ -449,7 +693,7 @@ float PedirFlotanteSinRango(char mensaje[], char mensajeError[])
 }
 int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[])
 {
-	int resultadoValidado;
+	int resultadoValidado = -1;
 	int contadorError;
 	contadorError = 0;
 
@@ -462,7 +706,6 @@ int ValidarEnteroSinRango(char opcionIngresada[],char mensajeError[])
 				printf("%s", mensajeError);
 				fflush(stdin);
 				scanf("%[^\n]",opcionIngresada);
-				resultadoValidado = -1;
 			}
 		}
 		else
