@@ -19,10 +19,13 @@ int main(void) {
 	int banderaPrimerAlta = 0;
 	Employee listEmployee[TAM];
 
+	printf("ABM TP N°2 UTN");
+
 	r = InitEmployees(listEmployee,TAM);
-	ProcesoCorrecto(r, "Se inicializaron correctamente todos los empleados", "Error en la inicializacion de los empleados");
+	ProcesoCorrecto(r, "EL PROGRAMA ESTA LISTO PARA USARSE", "Error en la inicializacion de los empleados");
 
 	do{
+
 		opcion = MenuDeOpciones();
 		fflush(stdin);
 

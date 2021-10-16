@@ -17,7 +17,7 @@ int MenuDeOpciones(void)
 {
 	char opcion[5];
 	int opcionValidada;
-
+	printf("\nMENU DE OPCIONES\n");
 	printf("\n1. ALTA\n");
 	printf("2. MODIFICAR\n");
 	printf("3. BAJA\n");
@@ -35,7 +35,7 @@ int MenuModificar(void)
 {
 	char opcion[5];
 	int opcionValidada;
-	printf("\nOpciones de Modificacion");
+	printf("\nMENU DE MODIFICACION");
 	printf("\n1. NOMBRE\n");
 	printf("2. APELLIDO\n");
 	printf("3. SALARIO\n");
