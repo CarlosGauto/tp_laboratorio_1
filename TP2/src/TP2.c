@@ -62,7 +62,7 @@ int main(void) {
 
 			case 2:
 			if(banderaPrimerAlta){
-				printf("Modificar Persona");
+				printf("Modificar Persona\n");
 				printEmployees(listEmployee, TAM);
 
 				printf("\nIndique el id que desea modificar: ");
@@ -94,7 +94,7 @@ int main(void) {
 
 				case 3:
 				if(banderaPrimerAlta){
-					printf("Baja Persona");
+					printf("Baja Persona\n");
 					printEmployees(listEmployee, TAM);
 
 					printf("\nIndique el id para la Baja: ");
@@ -123,7 +123,7 @@ int main(void) {
 
 				case 4:
 				if(banderaPrimerAlta){
-					printf("LISTADO");
+					printf("LISTADO\n");
 					printEmployees(listEmployee, TAM);
 
 					printf("\n1.Orden Ascendente\n2.Orden Descendente\nElija una opcion: ");
@@ -133,7 +133,7 @@ int main(void) {
 
 					if(opcionListado != -1){
 						r = sortEmployees(listEmployee, TAM, opcionListado);
-						ProcesoCorrecto(r, "Se realizo el ordenamiento correctamente", "ERROR. NO Se realizo el ordenamiento correctamente");
+						ProcesoCorrecto(r, "\nSe realizo el ordenamiento correctamente\n", "ERROR. NO Se realizo el ordenamiento correctamente");
 					}
 					printEmployees(listEmployee, TAM);
 				}

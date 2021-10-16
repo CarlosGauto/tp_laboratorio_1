@@ -17,12 +17,13 @@ int MenuDeOpciones(void)
 {
 	char opcion[5];
 	int opcionValidada;
-	printf("\nMENU DE OPCIONES\n");
+	printf("\n\n---MENU DE OPCIONES---\n");
 	printf("\n1. ALTA\n");
 	printf("2. MODIFICAR\n");
 	printf("3. BAJA\n");
 	printf("4. INFORMAR:\n");
 	printf("5. SALIR:\n");
+	printf("Elija una opcion:\n");
 
 	fflush(stdin);
 	scanf("%[^\n]", opcion);
